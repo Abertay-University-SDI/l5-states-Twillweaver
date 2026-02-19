@@ -23,7 +23,20 @@ Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
 			// size
 			{tile_size, tile_size }		
 		});
-		tile.setCollider(true);
+
+	// TASK: Only make ground/dirt tiles solid.
+	// Based on your tilemap, indices 0-3 (grass) and 20-23 (dirt) are ground.
+	// You can expand this logic as you add more tiles.
+		if (i <= 3 || (i >= 20 && i <= 23) || i == 142)
+		{
+			tile.setCollider(true);
+			// tile.setFillColor(sf::Color(255, 0, 0, 100)); // Debug: Make solid tiles red
+		}
+		else
+		{
+			tile.setCollider(false);
+		}
+
 		tileSet.push_back(tile);
 	}
 
@@ -64,6 +77,26 @@ void Level1::handleInput(float dt)
 void Level1::update(float dt)
 {
 	m_player.update(dt);
+
+// Grab tiles as a vector
+	std::vector<GameObject>& tiles = *m_tileMap.getLevel();
+
+	for (auto& tile : tiles)
+	{
+// Only check if the tile is a collider
+		if (tile.isCollider())
+		{
+			sf::FloatRect playerCollider = m_player.getCollisionBox();
+			sf::FloatRect tileBounds = tile.getCollisionBox();
+
+// Check if their collision boxes are overlapping
+			auto overlap = playerCollider.findIntersection(tileBounds);
+			if (overlap)
+			{
+				m_player.collisionResponse(tile);
+			}
+		}
+	}
 	
 }
 
