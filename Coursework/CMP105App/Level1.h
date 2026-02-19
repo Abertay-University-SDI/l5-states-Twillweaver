@@ -6,14 +6,14 @@
 #include "Player.h"
 #include "Framework/Collision.h"
 
-class Level1 : BaseLevel {
+class Level1 : public BaseLevel {
 public:
 	Level1(sf::RenderWindow& window, Input& input, GameState& gameState);
 	~Level1() override = default;
 
 	void handleInput(float dt) override;
-	void update(float dt);
-	void render();
+	void update(float dt) override;
+	void render() override;
 
 private:
 	// Default functions for rendering to the screen.
