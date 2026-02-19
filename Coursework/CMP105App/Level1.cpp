@@ -27,10 +27,14 @@ Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
 	// TASK: Only make ground/dirt tiles solid.
 	// Based on your tilemap, indices 0-3 (grass) and 20-23 (dirt) are ground.
 	// You can expand this logic as you add more tiles.
-		if (i <= 3 || (i >= 20 && i <= 23) || i == 142)
+		if (i <= 3 ||
+			(i >= 20 && i <= 23) ||
+			i == 142 ||
+			i == 81 ||
+			i == 83 ||
+			i == 104)
 		{
 			tile.setCollider(true);
-			// tile.setFillColor(sf::Color(255, 0, 0, 100)); // Debug: Make solid tiles red
 		}
 		else
 		{

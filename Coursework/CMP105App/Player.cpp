@@ -1,4 +1,4 @@
-#include "Player.h"
+﻿#include "Player.h"
 #include <iostream>
 
 Player::Player()
@@ -21,13 +21,23 @@ void Player::handleInput(float dt)
     if (m_input->isKeyDown(sf::Keyboard::Scancode::A))
         m_velocity.x = -SPEED;
 
-    if (m_input->isKeyDown(sf::Keyboard::Scancode::D))
+    else if (m_input->isKeyDown(sf::Keyboard::Scancode::D))
         m_velocity.x = SPEED;
+
+    // Jump (only if grounded)
+    if ((m_input->isKeyDown(sf::Keyboard::Scancode::W) ||
+        m_input->isKeyDown(sf::Keyboard::Scancode::Space))
+        && m_isOnGround)
+    {
+        m_velocity.y = -JUMP_FORCE;   // negative = upward
+        m_isOnGround = false;
+    }
 
     if (m_input->isKeyDown(sf::Keyboard::Scancode::R))
     {
         setPosition({ 50,0 });
         m_velocity = { 0,0 };
+        m_isOnGround = false;
     }
 }
 
@@ -48,33 +58,55 @@ void Player::update(float dt)
 
 void Player::collisionResponse(GameObject& collider)
 {
-    // 1. Define the player's collision box
     sf::FloatRect playerCollider = getCollisionBox();
+    sf::FloatRect tileBounds = collider.getCollisionBox();
 
-    // 2. Define the tile's (wall) collision box
-    sf::FloatRect wallBounds = collider.getCollisionBox();
-
-    // 3. Check for the intersection
-    auto overlap = playerCollider.findIntersection(wallBounds);
-
-    // 4. If there is no overlap, then leave
+    auto overlap = playerCollider.findIntersection(tileBounds);
     if (!overlap) return;
 
-    // If we are moving downward, handle the floor
-    if (m_velocity.y > 0)
+    // If overlap is wider than tall = vertical collision
+    if (overlap->size.x > overlap->size.y)
     {
-        // Stop the downward velocity
-        if (m_velocity.y > 0) // falling
+        // -------- TOP COLLISION (falling) --------
+        if (m_velocity.y > 0)
         {
-            m_velocity.y = 0;
-
-            float newY = wallBounds.position.y
+            float newY = tileBounds.position.y
                 - m_collisionBox.size.y
                 - m_collisionBox.position.y;
 
             setPosition({ getPosition().x, newY });
 
+            m_velocity.y = 0;
             m_isOnGround = true;
         }
     }
+    else
+    {
+        // -------- SIDE COLLISION --------
+
+        // If player is to left of tile
+        if (playerCollider.position.x < tileBounds.position.x)
+        {
+            setPosition({
+                tileBounds.position.x
+                - m_collisionBox.size.x
+                - m_collisionBox.position.x,
+                getPosition().y
+                });
+        }
+        else
+        {
+            // Player is to right of tile
+            setPosition({
+                tileBounds.position.x
+                + tileBounds.size.x
+                - m_collisionBox.position.x,
+                getPosition().y
+                });
+        }
+
+        // Reverse x velocity with restitution
+        m_velocity.x *= -COEFF_RESTITUTION;
+    }
 }
+
