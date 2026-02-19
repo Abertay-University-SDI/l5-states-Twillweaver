@@ -1,4 +1,5 @@
 #include "Level1.h"
+#include <set>
 
 
 Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
@@ -13,33 +14,26 @@ Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
 	tile.setCollisionBox({ { 0,0 },tile.getSize() });
 	std::vector<GameObject> tileSet;
 
+	std::set<int> solidTiles = {
+	1, 3,
+	20, 21, 22, 23,
+	81, 83,
+	104,
+	142
+	};
+
 	for (int i = 0; i < num_cols * num_rows; i++)
 	{
 		int row = i / num_cols;
 		int col = i % num_cols;
-		tile.setTextureRect({
-			// position
-			{(tile_size + sheet_spacing) * col, (tile_size + sheet_spacing) * row},	
-			// size
-			{tile_size, tile_size }		
-		});
 
-	// TASK: Only make ground/dirt tiles solid.
-	// Based on your tilemap, indices 0-3 (grass) and 20-23 (dirt) are ground.
-	// You can expand this logic as you add more tiles.
-		if (i <= 3 ||
-			(i >= 20 && i <= 23) ||
-			i == 142 ||
-			i == 81 ||
-			i == 83 ||
-			i == 104)
-		{
-			tile.setCollider(true);
-		}
-		else
-		{
-			tile.setCollider(false);
-		}
+		tile.setTextureRect({
+			{(tile_size + sheet_spacing) * col,
+			 (tile_size + sheet_spacing) * row},
+			{tile_size, tile_size}
+			});
+
+		tile.setCollider(solidTiles.count(i) > 0);
 
 		tileSet.push_back(tile);
 	}
