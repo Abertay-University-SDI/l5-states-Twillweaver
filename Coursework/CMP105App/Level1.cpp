@@ -11,7 +11,7 @@ Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
 
 	std::vector<GameObject> tileSet;
 
-	// Tiles that are solid/collidable
+	// Tiles that are solid
 	const std::set<int> solidTiles = { 1, 3, 20, 21, 22, 23, 81, 83, 104, 142 };
 
 	// Helper lambda to create a tile
@@ -49,22 +49,75 @@ Level1::Level1(sf::RenderWindow& hwnd, Input& in, GameState& gs) :
 
 	// Define tile placement in the level
 	std::vector<int> tileMapLocations{
-		blankIndex, blankIndex, 20, blankIndex, 66, blankIndex, blankIndex, blankIndex, blankIndex, 112,
+		blankIndex, blankIndex, 20, blankIndex, blankIndex, blankIndex, blankIndex, blankIndex, blankIndex, 112,
 		blankIndex, 21, 104, 22, 22, 23, blankIndex, blankIndex, blankIndex, 131,
 		1, 142, 142, 142, 142, 142, 3, blankIndex, 81, 83
 	};
 
 	sf::Vector2u mapSize = { 10, 3 };
 
+	// ---------------- TILEMAP ----------------
+	if (!m_tileTexture.loadFromFile("gfx/tilemap.png"))
+		std::cerr << "Failed to load tilemap texture!\n";
+
 	// Set up the tile map
 	m_tileMap.setPosition({ 0.f, 200.f });
-	m_tileMap.loadTexture("gfx/tilemap.png");
+	m_tileMap.setTexture(&m_tileTexture);
 	m_tileMap.setTileMap(tileMapLocations, mapSize);
 	m_tileMap.setTileSet(tileSet);
 	m_tileMap.buildLevel();
 
+
+	// ------------------ SWITCH ------------------
+	// Grid coordinates of the tile the switch sits on
+	const int switchCol = 4; // column of tile 22
+	const int switchRow = 1; // row of tile 22
+
+	sf::Vector2f tileSize = { tile_size * 5.f, tile_size * 5.f };
+
+	// Set switch texture
+	m_switch.setTexture(&m_tileTexture);
+	m_switch.setTextureRect({ {6 * 19, 3 * 19}, {18,18} });
+	m_switch.setSize(tileSize);
+
+	// Position the switch **on top of the tile** (y = tile top - switch height)
+	m_switch.setPosition({
+		switchCol * tileSize.x,                // x = column * tile width
+		200.f + switchRow * tileSize.y - tileSize.y // y = tile top - switch height
+		});
+
+	m_switch.setCollider(false);
+
+
+	// ------------------ FLAG ------------------
+	m_flag.setTexture(&m_tileTexture);
+	m_flag.setTextureRect({ {11 * 19, 5 * 19}, {18,18} });
+	m_flag.setPosition({ 90 * 9.f, 344.f });
+	m_flag.setSize({ 36.f, 36.f });
+	m_flag.setCollider(false);
+
 	// Link input to player
 	m_player.setInput(&m_input);
+
+	m_player.setSwitch(&m_switch);
+	m_player.setFlag(&m_flag);
+
+	// ------------------ FLAG POLE (interactible) ------------------
+// Grid coordinates of the tile the pole sits on
+	const int flagCol = 9;  // column of tile 83
+	const int flagRow = 2;  // row above tile 83 (pole stands on top)
+
+	// Set flagpole interactible (same size as switch)
+	m_flag.setTexture(&m_tileTexture);
+	m_flag.setTextureRect({ {11 * 19, 5 * 19}, {18,18} }); // could be blank if you want invisible pole
+	m_flag.setSize(tileSize);
+	m_flag.setPosition({
+		flagCol * tileSize.x,
+		200.f + flagRow * tileSize.y - tileSize.y // place interactible above tile
+		});
+	m_flag.setCollider(false); // does not block player
+
+
 }
 
 
@@ -170,6 +223,11 @@ void Level1::render()
 {
 	beginDraw();
 	m_tileMap.render(m_window);
+
+	// draw interactibles
+	m_window.draw(m_switch);
+	m_window.draw(m_flag);
+
 	m_window.draw(m_player);
 	endDraw();
 }

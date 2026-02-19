@@ -39,6 +39,33 @@ void Player::handleInput(float dt)
         m_velocity = { 0,0 };
         m_isOnGround = false;
     }
+
+    bool interactNow = m_input->isKeyDown(sf::Keyboard::Scancode::F) && !m_interactPressedLastFrame;
+    m_interactPressedLastFrame = m_input->isKeyDown(sf::Keyboard::Scancode::F);
+
+    if (interactNow) {
+        const float INTERACT_RANGE = 50.f;
+        sf::Vector2f playerCenter = getPosition() + m_collisionBox.position + m_collisionBox.size / 2.f;
+
+        if (m_switch) {
+            sf::Vector2f switchCenter = m_switch->getPosition() + m_switch->getSize() / 2.f;
+            if (std::abs(playerCenter.x - switchCenter.x) < INTERACT_RANGE &&
+                std::abs(playerCenter.y - switchCenter.y) < INTERACT_RANGE)
+            {
+                std::cout << "lever pressed\n";
+            }
+        }
+
+        if (m_flag) {
+            sf::Vector2f flagCenter = m_flag->getPosition() + m_flag->getSize() / 2.f;
+            if (std::abs(playerCenter.x - flagCenter.x) < INTERACT_RANGE &&
+                std::abs(playerCenter.y - flagCenter.y) < INTERACT_RANGE)
+            {
+                std::cout << "flag pressed\n";
+            }
+        }
+    }
+
 }
 
 

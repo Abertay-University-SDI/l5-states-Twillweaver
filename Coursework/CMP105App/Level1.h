@@ -23,4 +23,10 @@ private:
 
 	Player m_player;
 
+	// Interactable objects
+	GameObject m_flag;
+	GameObject m_switch;
+
+	// Tile texture used for interactables
+	sf::Texture m_tileTexture;
 };

@@ -33,6 +33,9 @@ public:
 	// Set the origin position of the tilemap section. 
 	void setPosition(sf::Vector2f pos) { m_position = pos; };
 
+	void setTexture(sf::Texture* texture) { m_texture = *texture; }
+
+
 protected:
 	std::vector<GameObject> m_tileSet;
 	std::vector<int> m_tileMap;
